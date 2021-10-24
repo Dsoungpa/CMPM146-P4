@@ -18,11 +18,16 @@ pyhop.declare_methods ('produce', produce)
 def make_method (name, rule):
     def method (state, ID):
         # your code here
+        requires = rule[0]
+        consumes = rule[1]
         l = []
         
-        for key in rule.keys():
-            l.append(('have_enough', ID, key, rule[key]))
+        for key in requires.keys():
+            l.append(('have_enough', ID, key, requires[key]))
             
+        for key in consumes.keys():
+            l.append(('have_enough', ID, key, consumes[key]))
+        
         l.append((name, ID))
         
         return l
@@ -54,8 +59,12 @@ def declare_methods (data):
             requires = {}
             if 'Requires' in data['Recipes'][recipe[1]]:
                 requires = data['Recipes'][recipe[1]]['Requires']
+            consumes = {}
+            if 'Consumes' in data['Recipes'][recipe[1]]:
+                consumes = data['Recipes'][recipe[1]]['Consumes']
             name = 'op_'+recipe[1]
-            m = make_method(name, requires)
+            m = make_method(name, [requires, consumes])
+            m.__name__ = recipe[1]
             methods.append(m)
         
         name = 'produce_'+produces
@@ -63,7 +72,7 @@ def declare_methods (data):
         
         pyhop.declare_methods(*newList)
         
-    pass            
+    return           
 
 def make_operator (rule):
     #print(rule)
@@ -82,9 +91,11 @@ def make_operator (rule):
         # check that there is enough time
         if time > state.time[ID]:
             return False
-        else:
-            state.time[ID] -= time
         
+        
+        for key in consumes.keys():
+            if consumes[key] > getattr(state, key)[ID]:
+                return False
         # remove items that are consumed.
         for key in consumes.keys():
             total = getattr(state, key)[ID]
@@ -98,6 +109,8 @@ def make_operator (rule):
             produced = produces[key]
             newTotal = total + produced
             setattr(state, key, {ID: newTotal})
+        
+        state.time[ID] -= time
         
         # successful return
         return state
@@ -170,7 +183,7 @@ if __name__ == '__main__':
     with open(rules_filename) as f:
         data = json.load(f)
 
-    state = set_up_state(data, 'agent', time=239) # allot time here
+    state = set_up_state(data, 'agent', time=300) # allot time here
     goals = set_up_goals(data, 'agent')
 
     declare_operators(data)
@@ -178,10 +191,10 @@ if __name__ == '__main__':
     add_heuristic(data, 'agent')
 
     #pyhop.print_operators()
-    #pyhop.print_methods()
+    pyhop.print_methods()
 
     # Hint: verbose output can take a long time even if the solution is correct; 
     # try verbose=1 if it is taking too long
-    pyhop.pyhop(state, goals, verbose=3)
+    pyhop.pyhop(state, goals, verbose=1)
     #pyhop.pyhop(state, goals, verbose=3)
     # pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
