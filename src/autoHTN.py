@@ -20,13 +20,25 @@ def make_method (name, rule):
         # your code here
         requires = rule[0]
         consumes = rule[1]
+        
         l = []
         
-        for key in requires.keys():
-            l.append(('have_enough', ID, key, requires[key]))
-            
+        """
         for key in consumes.keys():
-            l.append(('have_enough', ID, key, consumes[key]))
+            #l.append(('have_enough', ID, key, consumes[key]))
+            l = [('have_enough', ID, key, consumes[key])] + l
+        """
+        
+        c = [('have_enough', ID, 'ingot', 0), ('have_enough', ID, 'coal', 0), ('have_enough', ID, 'ore', 0), ('have_enough', ID, 'cobble', 0), ('have_enough', ID, 'stick', 0), ('have_enough', ID, 'plank', 0), ('have_enough', ID, 'wood', 0)]
+        for check in c:
+            for key in consumes.keys():
+                if key == check[2]:
+                    newCheck = ('have_enough', ID, key, consumes[key])
+                    l.append(newCheck)
+        
+        for key in requires.keys():
+            #l.append(('have_enough', ID, key, requires[key]))
+            l = [('have_enough', ID, key, requires[key])] + l
         
         l.append((name, ID))
         
@@ -150,6 +162,84 @@ def add_heuristic (data, ID):
     # e.g. def heuristic2(...); pyhop.add_check(heuristic2)
     def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
         # your code here
+        """
+        print('------------------------------\n\n')
+        print('state')
+        print(state)
+        print('curr_task')
+        """
+        #print(curr_task)
+        """
+        print('tasks')
+        print(tasks)
+        print('plan')
+        """
+        #print(plan)
+        """
+        print('depth')
+        print(depth)
+        print('calling_stack')
+        """
+        #print(calling_stack)
+        """
+        print('------------------------------\n\n')
+        """
+        #print(type(curr_task))      #tuple
+        #print(type(tasks))          #list
+        #print(type(plan))           #list
+        #print(type(depth))          #int
+        #print(type(calling_stack))  #list
+        #('produce', 'agent', 'item')
+        
+        
+        if curr_task[0] == 'produce' and curr_task[2] == 'bench' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'furnace' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'wooden_axe' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'stone_axe' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'iron_axe' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'wooden_pickaxe' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'stone_pickaxe' and curr_task in calling_stack:
+            return True
+        elif curr_task[0] == 'produce' and curr_task[2] == 'iron_pickaxe' and curr_task in calling_stack:
+            return True
+        
+        for item in data['Items']:
+            if curr_task[0] == 'produce' and curr_task[2] == item:
+                required = 0
+                for task in tasks:
+                    if task[0] == 'have_enough' and task[2] == item:
+                        required += task[3]
+                if getattr(state, item)[ID] >= required:
+                    return True
+        """    
+        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_axe':
+            if getattr(state, 'stone_axe')[ID] == 0:
+                return True
+        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_axe':
+            if getattr(state, 'wooden_axe')[ID] == 0:
+                return True
+        
+        if curr_task[0] == 'produce' and curr_task[2] == 'stone_axe':
+            if getattr(state, 'wooden_axe')[ID] == 0:
+                return True
+        
+        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_pickaxe':
+            if getattr(state, 'stone_pickaxe')[ID] == 0:
+                return True
+        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_pickaxe':
+            if getattr(state, 'wooden_pickaxe')[ID] == 0:
+                return True
+        
+        if curr_task[0] == 'have_enough' and curr_task[2] == 'stone_pickaxe':
+            if getattr(state, 'wooden_pickaxe')[ID] == 0:
+                return True
+        """
         return False # if True, prune this branch
 
     pyhop.add_check(heuristic)
@@ -183,7 +273,7 @@ if __name__ == '__main__':
     with open(rules_filename) as f:
         data = json.load(f)
 
-    state = set_up_state(data, 'agent', time=300) # allot time here
+    state = set_up_state(data, 'agent', time=200) # allot time here
     goals = set_up_goals(data, 'agent')
 
     declare_operators(data)
@@ -191,10 +281,10 @@ if __name__ == '__main__':
     add_heuristic(data, 'agent')
 
     #pyhop.print_operators()
-    pyhop.print_methods()
+    #pyhop.print_methods()
 
     # Hint: verbose output can take a long time even if the solution is correct; 
     # try verbose=1 if it is taking too long
-    pyhop.pyhop(state, goals, verbose=1)
+    pyhop.pyhop(state, goals, verbose=3)
     #pyhop.pyhop(state, goals, verbose=3)
     # pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
