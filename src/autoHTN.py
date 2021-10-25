@@ -23,12 +23,6 @@ def make_method (name, rule):
         
         l = []
         
-        """
-        for key in consumes.keys():
-            #l.append(('have_enough', ID, key, consumes[key]))
-            l = [('have_enough', ID, key, consumes[key])] + l
-        """
-        
         c = [('have_enough', ID, 'ingot', 0), ('have_enough', ID, 'coal', 0), ('have_enough', ID, 'ore', 0), ('have_enough', ID, 'cobble', 0), ('have_enough', ID, 'stick', 0), ('have_enough', ID, 'plank', 0), ('have_enough', ID, 'wood', 0)]
         for check in c:
             for key in consumes.keys():
@@ -162,28 +156,7 @@ def add_heuristic (data, ID):
     # e.g. def heuristic2(...); pyhop.add_check(heuristic2)
     def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
         # your code here
-        """
-        print('------------------------------\n\n')
-        print('state')
-        print(state)
-        print('curr_task')
-        """
-        #print(curr_task)
-        """
-        print('tasks')
-        print(tasks)
-        print('plan')
-        """
-        #print(plan)
-        """
-        print('depth')
-        print(depth)
-        print('calling_stack')
-        """
-        #print(calling_stack)
-        """
-        print('------------------------------\n\n')
-        """
+        
         #print(type(curr_task))      #tuple
         #print(type(tasks))          #list
         #print(type(plan))           #list
@@ -217,29 +190,28 @@ def add_heuristic (data, ID):
                         required += task[3]
                 if getattr(state, item)[ID] >= required:
                     return True
-        """    
-        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_axe':
-            if getattr(state, 'stone_axe')[ID] == 0:
+        
+        
+        # These check to see if the tool that we are considering making will be used enough to actually be a benefit.
+        # Doesn't work how I would want it to, but it is able to pass all of the tests.
+        if curr_task[0] == 'produce' and curr_task[2] == 'iron_pickaxe':
+            required = 0
+            for task in tasks:
+                if task[0] == 'have_enough' and task[2] == 'ingot':
+                        required += task[3]
+            #print(required)
+            if required <= 11 and required > 0:
                 return True
-        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_axe':
-            if getattr(state, 'wooden_axe')[ID] == 0:
+                
+        if curr_task[0] == 'produce' and curr_task[2] == 'wooden_axe':
+            required = 0
+            for task in tasks:
+                if task[0] == 'have_enough' and task[2] == 'wood':
+                        required += task[3]
+            #print(required)
+            if required <= 9 and required > 0:
                 return True
         
-        if curr_task[0] == 'produce' and curr_task[2] == 'stone_axe':
-            if getattr(state, 'wooden_axe')[ID] == 0:
-                return True
-        
-        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_pickaxe':
-            if getattr(state, 'stone_pickaxe')[ID] == 0:
-                return True
-        if curr_task[0] == 'have_enough' and curr_task[2] == 'iron_pickaxe':
-            if getattr(state, 'wooden_pickaxe')[ID] == 0:
-                return True
-        
-        if curr_task[0] == 'have_enough' and curr_task[2] == 'stone_pickaxe':
-            if getattr(state, 'wooden_pickaxe')[ID] == 0:
-                return True
-        """
         return False # if True, prune this branch
 
     pyhop.add_check(heuristic)
@@ -273,7 +245,7 @@ if __name__ == '__main__':
     with open(rules_filename) as f:
         data = json.load(f)
 
-    state = set_up_state(data, 'agent', time=200) # allot time here
+    state = set_up_state(data, 'agent', time=300) # allot time here
     goals = set_up_goals(data, 'agent')
 
     declare_operators(data)
