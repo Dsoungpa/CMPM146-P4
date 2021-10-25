@@ -164,33 +164,8 @@ def add_heuristic (data, ID):
         #print(type(calling_stack))  #list
         #('produce', 'agent', 'item')
         
-        
-        if curr_task[0] == 'produce' and curr_task[2] == 'bench' and curr_task in calling_stack:
+        if curr_task[0] == 'produce' and curr_task[2] in data['Tools'] and curr_task in calling_stack:
             return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'furnace' and curr_task in calling_stack:
-            return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'wooden_axe' and curr_task in calling_stack:
-            return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'stone_axe' and curr_task in calling_stack:
-            return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'iron_axe' and curr_task in calling_stack:
-            return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'wooden_pickaxe' and curr_task in calling_stack:
-            return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'stone_pickaxe' and curr_task in calling_stack:
-            return True
-        elif curr_task[0] == 'produce' and curr_task[2] == 'iron_pickaxe' and curr_task in calling_stack:
-            return True
-        
-        for item in data['Items']:
-            if curr_task[0] == 'produce' and curr_task[2] == item:
-                required = 0
-                for task in tasks:
-                    if task[0] == 'have_enough' and task[2] == item:
-                        required += task[3]
-                if getattr(state, item)[ID] >= required:
-                    return True
-        
         
         # These check to see if the tool that we are considering making will be used enough to actually be a benefit.
         # Doesn't work how I would want it to, but it is able to pass all of the tests.
